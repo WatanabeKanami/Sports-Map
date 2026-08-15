@@ -1,0 +1,195 @@
+[
+  {
+    "id": "water-koto-sports-hall",
+    "name": "スポーツ会館 給水スポット",
+    "category": "water",
+    "location": {
+      "latitude": 35.68434,
+      "longitude": 139.82158
+    },
+    "address": "東京都江東区北砂1-2-9",
+    "details": "1・2・3階。ボトルディスペンサー型・飲み口型。",
+    "hoursNote": "施設の開館中に利用。原典CSVには個別の利用時間がありません。",
+    "priceCategory": "unknown",
+    "priceNote": "原典の料金欄は空欄です。施設への入館条件を確認してください。",
+    "sourceUrl": "https://www.waterworks.metro.tokyo.lg.jp/kurashi/drinking_station/",
+    "sourceDatasetName": "東京都水道局 Tokyowater Drinking Station",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t000019d0000000003",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "water-kameido-sports-center",
+    "name": "亀戸スポーツセンター 給水スポット",
+    "category": "water",
+    "location": {
+      "latitude": 35.70162,
+      "longitude": 139.83598
+    },
+    "address": "東京都江東区亀戸8-22-1",
+    "details": "地下1階・1・2・3階。飲み口型。",
+    "hoursNote": "施設の開館中に利用。原典CSVには個別の利用時間がありません。",
+    "priceCategory": "unknown",
+    "priceNote": "原典の料金欄は空欄です。施設への入館条件を確認してください。",
+    "sourceUrl": "https://www.waterworks.metro.tokyo.lg.jp/kurashi/drinking_station/",
+    "sourceDatasetName": "東京都水道局 Tokyowater Drinking Station",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t000019d0000000003",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "cooling-ariake-sports-center",
+    "name": "有明スポーツセンター",
+    "category": "cooling",
+    "location": {
+      "latitude": 35.63319504535566,
+      "longitude": 139.7838263911664
+    },
+    "address": "東京都江東区有明2-3-5",
+    "details": "クーリングシェルター指定・TOKYOクールシェアスポット登録。7階展望回廊、受入れ可能人数70人。",
+    "hoursNote": "8:30～22:00。第2・4月曜日などの休館日を除きます。",
+    "priceCategory": "unknown",
+    "priceNote": "涼み場所の利用料金は原典に記載がありません。",
+    "sourceUrl": "https://www.koto-hsc.or.jp/sports_center4/",
+    "sourceDatasetName": "江東区 クーリングシェルター（指定暑熱避難施設）一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d3100000016",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "cooling-fukagawa-sports-center",
+    "name": "深川スポーツセンター",
+    "category": "cooling",
+    "location": {
+      "latitude": 35.67034720921182,
+      "longitude": 139.7916114159974
+    },
+    "address": "東京都江東区越中島1-2-18",
+    "details": "クーリングシェルター指定・TOKYOクールシェアスポット登録。1階ロビー奥、受入れ可能人数15人。",
+    "hoursNote": "8:30～22:00。第2・4月曜日などの休館日を除きます。",
+    "priceCategory": "unknown",
+    "priceNote": "涼み場所の利用料金は原典に記載がありません。",
+    "sourceUrl": "https://www.koto-hsc.or.jp/sports_center2/",
+    "sourceDatasetName": "江東区 クーリングシェルター（指定暑熱避難施設）一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d3100000016",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "cooling-yumenoshima-stadium",
+    "name": "夢の島競技場",
+    "category": "cooling",
+    "location": {
+      "latitude": 35.648618389662786,
+      "longitude": 139.8243449020566
+    },
+    "address": "東京都江東区夢の島1-1-2",
+    "details": "クーリングシェルター指定・TOKYOクールシェアスポット登録。医務室、受入れ可能人数3人。",
+    "hoursNote": "9:00～21:00。第2・4月曜日などの休場日を除きます。",
+    "priceCategory": "unknown",
+    "priceNote": "涼み場所の利用料金は原典に記載がありません。",
+    "sourceUrl": "https://www.di-ksp.jp/facility/yumenoshima_k",
+    "sourceDatasetName": "江東区 クーリングシェルター（指定暑熱避難施設）一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d3100000016",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "toilet-mannen-bridge",
+    "name": "江東区立万年橋際公衆便所",
+    "category": "toilet",
+    "location": {
+      "latitude": 35.6832,
+      "longitude": 139.79484
+    },
+    "address": "東京都江東区清澄2-14-9",
+    "details": "万年橋南東詰め。車椅子使用者用・乳幼児用・オストメイト対応設備あり。",
+    "hoursNote": "原典では0:00～23:59。清掃・工事等による一時利用不可は反映しません。",
+    "priceCategory": "unknown",
+    "priceNote": "料金項目は原典データにありません。",
+    "wheelchairAccessible": true,
+    "sourceUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019",
+    "sourceDatasetName": "江東区 公衆トイレ一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "toilet-shin-ohashi-bridge",
+    "name": "江東区立新大橋際公衆便所",
+    "category": "toilet",
+    "location": {
+      "latitude": 35.68781,
+      "longitude": 139.79324
+    },
+    "address": "東京都江東区新大橋1-2-1",
+    "details": "新大橋南西詰め。車椅子使用者用・乳幼児用・オストメイト対応設備あり。",
+    "hoursNote": "原典では0:00～23:59。清掃・工事等による一時利用不可は反映しません。",
+    "priceCategory": "unknown",
+    "priceNote": "料金項目は原典データにありません。",
+    "wheelchairAccessible": true,
+    "sourceUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019",
+    "sourceDatasetName": "江東区 公衆トイレ一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "toilet-hirano-2-playground",
+    "name": "江東区立平野二丁目児童遊園内公衆便所",
+    "category": "toilet",
+    "location": {
+      "latitude": 35.678649,
+      "longitude": 139.80274
+    },
+    "address": "東京都江東区平野2-8-2",
+    "details": "平野二丁目児童遊園内。車椅子使用者用・乳幼児用・オストメイト対応設備あり。",
+    "hoursNote": "原典では0:00～23:59。清掃・工事等による一時利用不可は反映しません。",
+    "priceCategory": "unknown",
+    "priceNote": "料金項目は原典データにありません。",
+    "wheelchairAccessible": true,
+    "sourceUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019",
+    "sourceDatasetName": "江東区 公衆トイレ一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15"
+  },
+  {
+    "id": "aed-ariake-sports-center",
+    "name": "有明スポーツセンター AED",
+    "category": "aed",
+    "location": {
+      "latitude": 35.633206,
+      "longitude": 139.78381
+    },
+    "address": "東京都江東区有明2-3-5",
+    "details": "A棟6階・B棟3階に設置。",
+    "hoursNote": "月～日 8:30～22:00、休館日等を除く。施設閉館中は利用できない可能性があります。",
+    "priceCategory": "not-applicable",
+    "sourceUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000027",
+    "sourceDatasetName": "江東区 AED設置箇所一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000027",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15",
+    "warnings": ["緊急時は119番通報と現地確認を優先"]
+  },
+  {
+    "id": "aed-fukagawa-sports-center",
+    "name": "深川スポーツセンター AED",
+    "category": "aed",
+    "location": {
+      "latitude": 35.67046,
+      "longitude": 139.79171
+    },
+    "address": "東京都江東区越中島1-2-18",
+    "details": "1階ロビー・事務所付近に設置。",
+    "hoursNote": "月～日 8:30～22:00、休館日等を除く。施設閉館中は利用できない可能性があります。",
+    "priceCategory": "not-applicable",
+    "sourceUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000027",
+    "sourceDatasetName": "江東区 AED設置箇所一覧",
+    "sourceDatasetUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000027",
+    "license": "CC BY 4.0",
+    "verifiedAt": "2026-08-15",
+    "warnings": ["緊急時は119番通報と現地確認を優先"]
+  }
+]
