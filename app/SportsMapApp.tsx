@@ -335,7 +335,7 @@ export default function SportsMapApp() {
             <span>「今からできる」に。</span>
           </h1>
           <p className="hero-description">
-            使える時間と予算を選ぶだけ。江東区のオープンデータから、
+            使える時間と予算を選ぶだけ。江東区のオープンデータから、<br />
             いまの条件に合う運動を3つ提案します。
           </p>
 
@@ -495,7 +495,7 @@ export default function SportsMapApp() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">YOUR 3 PICKS</p>
-            <h2>今日の候補、こんな感じ。</h2>
+            <h2>今日、行くならココ！</h2>
           </div>
           <p>
             {locationLabel}から／{appliedInput.timeMinutes}分／
@@ -558,7 +558,7 @@ export default function SportsMapApp() {
       <section className="data-section" id="data-policy">
         <div>
           <p className="eyebrow">WHY KOTO PILOT?</p>
-          <h2>まず江東区で、小さく確かめる。</h2>
+          <h2>まず江東区で。</h2>
         </div>
         <div className="data-copy">
           <p>
