@@ -584,11 +584,51 @@ summary:focus-visible {
 }
 
 .result-topline {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 9px;
   align-items: center;
   color: var(--blue);
+}
+
+.result-topline > span:nth-child(2) {
+  margin-right: auto;
+}
+
+.distance-pill {
+  color: var(--blue);
+}
+
+.today-availability {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.today-availability b {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.today-availability.is-open {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.today-availability.is-closed {
+  background: rgba(16, 18, 14, 0.62);
+  color: var(--paper);
+}
+
+.today-availability.is-check {
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
 }
 
 .rank-badge {
@@ -653,6 +693,26 @@ summary:focus-visible {
   margin: 20px 0;
   font-size: 12px;
   font-weight: 700;
+}
+
+.closed-day-note {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: rgba(16, 18, 14, 0.03);
+}
+
+.closed-day-note strong {
+  font-size: 11px;
+}
+
+.closed-day-note span {
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 .nearby-support {

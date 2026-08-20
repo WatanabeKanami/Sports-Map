@@ -637,13 +637,21 @@ function RecommendationCard({
 }) {
   const { activity, distanceKm, reasons, warnings } = recommendation;
   const nearestSupport = getNearestSupport(activity, supportSpots);
+  const closedDayNote = getClosedDayNote(activity);
+  const todayAvailabilityBadge = getTodayAvailabilityBadge(activity);
 
   return (
     <article className={`result-card${selected ? " is-selected" : ""}`} id={`result-${activity.id}`}>
       <div className="result-topline">
         <span className="rank-badge">{String(rank).padStart(2, "0")}</span>
         <span>{CATEGORY_LABELS[activity.category ?? ""] ?? "スポーツ"}</span>
-        <span>{formatDistance(distanceKm)}</span>
+        <span className="distance-pill">{formatDistance(distanceKm)}</span>
+        {todayAvailabilityBadge && (
+          <span className={`today-availability ${todayAvailabilityBadge.className}`}>
+            <b aria-hidden="true">{todayAvailabilityBadge.icon}</b>
+            {todayAvailabilityBadge.label}
+          </span>
+        )}
       </div>
       <h3>{activity.name}</h3>
       <p className="facility-name">{activity.facilityName}</p>
@@ -655,6 +663,12 @@ function RecommendationCard({
       <div className="reason-list">
         {reasons.map((reason) => <span key={reason}>✓ {reason}</span>)}
       </div>
+      {closedDayNote && (
+        <div className="closed-day-note">
+          <strong>休館日のご案内</strong>
+          <span>{closedDayNote}</span>
+        </div>
+      )}
       {nearestSupport.length > 0 && (
         <div className="nearby-support">
           <strong>近くのサポート</strong>
@@ -730,6 +744,47 @@ function formatSetting(activity: Activity) {
 function formatDate(value?: string | null) {
   if (!value) return "未確認";
   return value.replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$1/$2/$3");
+}
+
+function getClosedDayNote(activity: Activity) {
+  if (typeof activity.closedDayNote === "string" && activity.closedDayNote.trim()) {
+    return activity.closedDayNote.trim();
+  }
+
+  const notes = [activity.priceNote, ...(activity.warnings ?? [])]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+  return (
+    notes.find((note) => /(休館日|休場日|休止|定休日|開放日)/.test(note)) ?? null
+  );
+}
+
+function getTodayAvailabilityBadge(activity: Activity) {
+  const status = activity.todayAvailability;
+  const customLabel = activity.todayAvailabilityLabel?.trim();
+
+  if (status === "open") {
+    return {
+      className: "is-open",
+      icon: "✓",
+      label: customLabel || "本日開館",
+    };
+  }
+  if (status === "closed") {
+    return {
+      className: "is-closed",
+      icon: "×",
+      label: customLabel || "本日休館",
+    };
+  }
+  if (status === "check") {
+    return {
+      className: "is-check",
+      icon: "!",
+      label: customLabel || "営業情報を確認",
+    };
+  }
+
+  return null;
 }
 
 function escapeHtml(value: string) {

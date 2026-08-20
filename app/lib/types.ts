@@ -6,6 +6,7 @@ export const INDOOR_PREFERENCES = ["indoor", "outdoor", "either"] as const;
 
 export type IndoorPreference = (typeof INDOOR_PREFERENCES)[number];
 export type ActivitySetting = "indoor" | "outdoor" | "both";
+export type ActivityTodayAvailability = "open" | "closed" | "check";
 
 export interface GeoPoint {
   latitude: number;
@@ -33,6 +34,9 @@ export interface Activity {
   priceAmountYen?: number | null;
   priceUnit?: string | null;
   priceSourceUrl?: string | null;
+  todayAvailability?: ActivityTodayAvailability | null;
+  todayAvailabilityLabel?: string | null;
+  closedDayNote?: string | null;
   sourceUrl?: string | null;
   sourceDatasetName?: string | null;
   sourceDatasetUrl?: string | null;
