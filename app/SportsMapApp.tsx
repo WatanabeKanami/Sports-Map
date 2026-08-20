@@ -25,7 +25,7 @@ const AREA_OPTIONS = [
 ] as const;
 
 const TIME_OPTIONS = [30, 60, 90, 120];
-const BUDGET_OPTIONS = Array.from({ length: 7 }, (_, index) => index * 250);
+const BUDGET_OPTIONS = Array.from({ length: 7 }, (_, index) => index * 500);
 const GROUP_OPTIONS = Array.from({ length: 10 }, (_, index) => index + 1);
 
 const MOOD_OPTIONS: { value: Mood; label: string; caption: string }[] = [
