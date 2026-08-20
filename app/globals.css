@@ -245,7 +245,38 @@ summary:focus-visible {
   gap: 6px;
 }
 
+.scroll-choice-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scroll-choice-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-choice-row button {
+  min-width: 92px;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.scroll-choice-row.is-group button {
+  min-width: 68px;
+}
+
+.scroll-choice-hint {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
 .choice-row button,
+.scroll-choice-row button,
 .mood-grid button,
 .area-grid button {
   min-height: 44px;
@@ -260,12 +291,14 @@ summary:focus-visible {
 }
 
 .choice-row button:hover,
+.scroll-choice-row button:hover,
 .mood-grid button:hover,
 .area-grid button:hover {
   border-color: var(--ink);
 }
 
 .choice-row button:active,
+.scroll-choice-row button:active,
 .mood-grid button:active,
 .area-grid button:active,
 .primary-action:active {
@@ -273,6 +306,7 @@ summary:focus-visible {
 }
 
 .choice-row button.is-active,
+.scroll-choice-row button.is-active,
 .mood-grid button.is-active,
 .area-grid button.is-active {
   border-color: var(--ink);

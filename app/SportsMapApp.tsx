@@ -25,8 +25,8 @@ const AREA_OPTIONS = [
 ] as const;
 
 const TIME_OPTIONS = [30, 60, 90, 120];
-const BUDGET_OPTIONS = [0, 500, 1000, 3000];
-const GROUP_OPTIONS = [1, 2, 4, 10];
+const BUDGET_OPTIONS = Array.from({ length: 7 }, (_, index) => index * 500);
+const GROUP_OPTIONS = Array.from({ length: 10 }, (_, index) => index + 1);
 
 const MOOD_OPTIONS: { value: Mood; label: string; caption: string }[] = [
   { value: "relax", label: "ゆるく", caption: "力を抜いて" },
@@ -375,36 +375,42 @@ export default function SportsMapApp() {
 
             <fieldset>
               <legend><span>02</span> 1人あたりの予算</legend>
-              <div className="choice-row">
-                {BUDGET_OPTIONS.map((budget) => (
-                  <button
-                    className={draftInput.budget === budget ? "is-active" : ""}
-                    key={budget}
-                    type="button"
-                    aria-pressed={draftInput.budget === budget}
-                    onClick={() => setDraftInput((current) => ({ ...current, budget }))}
-                  >
-                    {budget === 0 ? "無料" : `${budget.toLocaleString("ja-JP")}円`}
-                  </button>
-                ))}
+              <div className="scroll-choice-wrapper">
+                <div className="scroll-choice-row" aria-label="予算の候補を横スクロールで選択">
+                  {BUDGET_OPTIONS.map((budget) => (
+                    <button
+                      className={draftInput.budget === budget ? "is-active" : ""}
+                      key={budget}
+                      type="button"
+                      aria-pressed={draftInput.budget === budget}
+                      onClick={() => setDraftInput((current) => ({ ...current, budget }))}
+                    >
+                      {budget === 0 ? "無料" : `${budget.toLocaleString("ja-JP")}円`}
+                    </button>
+                  ))}
+                </div>
+                <small className="scroll-choice-hint">横スクロールして選べます</small>
               </div>
             </fieldset>
 
             <div className="condition-split">
               <fieldset>
                 <legend><span>03</span> 人数</legend>
-                <div className="choice-row compact">
-                  {GROUP_OPTIONS.map((groupSize) => (
-                    <button
-                      className={draftInput.groupSize === groupSize ? "is-active" : ""}
-                      key={groupSize}
-                      type="button"
-                      aria-pressed={draftInput.groupSize === groupSize}
-                      onClick={() => setDraftInput((current) => ({ ...current, groupSize }))}
-                    >
-                      {groupSize}人
-                    </button>
-                  ))}
+                <div className="scroll-choice-wrapper">
+                  <div className="scroll-choice-row is-group" aria-label="人数の候補を横スクロールで選択">
+                    {GROUP_OPTIONS.map((groupSize) => (
+                      <button
+                        className={draftInput.groupSize === groupSize ? "is-active" : ""}
+                        key={groupSize}
+                        type="button"
+                        aria-pressed={draftInput.groupSize === groupSize}
+                        onClick={() => setDraftInput((current) => ({ ...current, groupSize }))}
+                      >
+                        {groupSize}人
+                      </button>
+                    ))}
+                  </div>
+                  <small className="scroll-choice-hint">横スクロールして選べます</small>
                 </div>
               </fieldset>
 
