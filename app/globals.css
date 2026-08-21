@@ -245,7 +245,38 @@ summary:focus-visible {
   gap: 6px;
 }
 
+.scroll-choice-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scroll-choice-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-choice-row button {
+  min-width: 92px;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.scroll-choice-row.is-group button {
+  min-width: 68px;
+}
+
+.scroll-choice-hint {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
 .choice-row button,
+.scroll-choice-row button,
 .mood-grid button,
 .area-grid button {
   min-height: 44px;
@@ -260,12 +291,14 @@ summary:focus-visible {
 }
 
 .choice-row button:hover,
+.scroll-choice-row button:hover,
 .mood-grid button:hover,
 .area-grid button:hover {
   border-color: var(--ink);
 }
 
 .choice-row button:active,
+.scroll-choice-row button:active,
 .mood-grid button:active,
 .area-grid button:active,
 .primary-action:active {
@@ -273,6 +306,7 @@ summary:focus-visible {
 }
 
 .choice-row button.is-active,
+.scroll-choice-row button.is-active,
 .mood-grid button.is-active,
 .area-grid button.is-active {
   border-color: var(--ink);
@@ -490,6 +524,11 @@ summary:focus-visible {
   font-size: 15px;
 }
 
+.activity-marker.is-unavailable {
+  background: #6f716a;
+  color: var(--paper);
+}
+
 .activity-marker b {
   font-weight: 900;
   transform: rotate(45deg);
@@ -556,6 +595,41 @@ summary:focus-visible {
   font-size: 11px;
 }
 
+.availability-alert {
+  display: grid;
+  gap: 7px;
+  margin: -18px 0 28px;
+  padding: 12px 14px;
+  border: 1px solid rgba(243, 242, 232, 0.32);
+  background: rgba(243, 242, 232, 0.06);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.availability-alert strong {
+  color: var(--lime);
+}
+
+.availability-alert ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.availability-alert li {
+  color: rgba(243, 242, 232, 0.72);
+}
+
+.availability-alert a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(243, 242, 232, 0.3);
+  text-underline-offset: 3px;
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -584,11 +658,46 @@ summary:focus-visible {
 }
 
 .result-topline {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 9px;
   align-items: center;
   color: var(--blue);
+}
+
+.result-topline > span:nth-child(2) {
+  margin-right: auto;
+}
+
+.distance-pill {
+  color: var(--blue);
+}
+
+.today-availability {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.today-availability b {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.today-availability.is-closed {
+  background: rgba(16, 18, 14, 0.62);
+  color: var(--paper);
+}
+
+.today-availability.is-check {
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
 }
 
 .rank-badge {
@@ -653,6 +762,40 @@ summary:focus-visible {
   margin: 20px 0;
   font-size: 12px;
   font-weight: 700;
+}
+
+.closed-day-note {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: rgba(16, 18, 14, 0.03);
+}
+
+.closed-day-note strong {
+  font-size: 11px;
+}
+
+.closed-day-note span {
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.closed-day-note small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+
+.closed-day-note a {
+  color: var(--blue);
+  font-weight: 800;
 }
 
 .nearby-support {
