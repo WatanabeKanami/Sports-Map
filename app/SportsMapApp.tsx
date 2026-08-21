@@ -2,6 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
+import {
+  getActivityAvailability,
+  millisecondsUntilNextTokyoDay,
+  type ActivityAvailability,
+} from "./lib/availability";
 import { recommendActivities } from "./lib/recommend";
 import type {
   Activity,
@@ -84,6 +89,9 @@ export default function SportsMapApp() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dataError, setDataError] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [availabilityReferenceDate, setAvailabilityReferenceDate] = useState(
+    () => new Date(),
+  );
   const [supportVisibility, setSupportVisibility] = useState<
     Record<SupportCategory, boolean>
   >({ water: true, cooling: true, toilet: false, aed: false });
@@ -120,9 +128,33 @@ export default function SportsMapApp() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(
+      () => setAvailabilityReferenceDate(new Date()),
+      millisecondsUntilNextTokyoDay(availabilityReferenceDate),
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [availabilityReferenceDate]);
+
   const recommendations = useMemo(
-    () => recommendActivities(activities, appliedInput),
-    [activities, appliedInput],
+    () =>
+      recommendActivities(activities, appliedInput, availabilityReferenceDate),
+    [activities, appliedInput, availabilityReferenceDate],
+  );
+
+  const excludedActivities = useMemo(
+    () =>
+      activities
+        .map((activity) => ({
+          activity,
+          availability: getActivityAvailability(
+            activity,
+            availabilityReferenceDate,
+          ),
+        }))
+        .filter(({ availability }) => availability.status !== "schedule-check"),
+    [activities, availabilityReferenceDate],
   );
 
   const activeSelectedId = recommendations.some(
@@ -188,34 +220,62 @@ export default function SportsMapApp() {
     const rankedIds = new Map(
       recommendations.map(({ activity }, index) => [activity.id, index + 1]),
     );
+    const excludedAvailabilityById = new Map(
+      excludedActivities.map(({ activity, availability }) => [
+        activity.id,
+        availability,
+      ]),
+    );
 
     activities.forEach((activity) => {
       if (!activity.location) return;
       const rank = rankedIds.get(activity.id);
+      const unavailable = excludedAvailabilityById.get(activity.id);
       const marker = L.marker(
         [activity.location.latitude, activity.location.longitude],
         {
           icon: L.divIcon({
             className: "map-marker-shell",
-            html: `<span class="activity-marker${rank ? " is-recommended" : ""}"><b>${rank ?? "•"}</b></span>`,
+            html: `<span class="activity-marker${rank ? " is-recommended" : ""}${unavailable ? " is-unavailable" : ""}"><b>${rank ?? (unavailable ? "×" : "•")}</b></span>`,
             iconSize: rank ? [38, 42] : [24, 28],
             iconAnchor: rank ? [19, 40] : [12, 26],
           }),
-          title: activity.name,
+          title: unavailable
+            ? `${activity.name}（${unavailable.label}）`
+            : activity.name,
         },
       ).addTo(markerLayer);
 
-      marker.bindTooltip(escapeHtml(activity.name), {
+      marker.bindTooltip(
+        escapeHtml(
+          unavailable
+            ? `${activity.name}（${unavailable.label}）`
+            : activity.name,
+        ),
+        {
         direction: "top",
         offset: [0, -28],
-      });
-      marker.on("click", () => {
-        setSelectedId(activity.id);
-        document.getElementById(`result-${activity.id}`)?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
+        },
+      );
+
+      if (unavailable) {
+        const officialUrl =
+          unavailable.sourceUrl ?? activity.closedDaySourceUrl ?? activity.sourceUrl;
+        const officialLink = officialUrl
+          ? `<br><a href="${escapeHtml(officialUrl)}" target="_blank" rel="noreferrer">公式情報を見る ↗</a>`
+          : "";
+        marker.bindPopup(
+          `<div class="map-popup"><strong>${escapeHtml(activity.name)}</strong><br><span>${escapeHtml(unavailable.label)}</span>${officialLink}</div>`,
+        );
+      } else {
+        marker.on("click", () => {
+          setSelectedId(activity.id);
+          document.getElementById(`result-${activity.id}`)?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
         });
-      });
+      }
     });
 
     supportSpots.forEach((spot) => {
@@ -250,7 +310,7 @@ export default function SportsMapApp() {
         .bindTooltip("現在地")
         .addTo(markerLayer);
     }
-  }, [activities, supportSpots, recommendations, supportVisibility, locationStatus, appliedInput.location, mapReady]);
+  }, [activities, supportSpots, recommendations, excludedActivities, supportVisibility, locationStatus, appliedInput.location, mapReady]);
 
   useEffect(() => {
     const selected = recommendations.find(({ activity }) => activity.id === activeSelectedId);
@@ -503,6 +563,25 @@ export default function SportsMapApp() {
           </p>
         </div>
 
+        {excludedActivities.length > 0 && (
+          <div className="availability-alert">
+            <strong>休館・利用休止中の施設・活動はおすすめ対象外です</strong>
+            <ul>
+              {excludedActivities.map(({ activity, availability }) => (
+                <li key={activity.id}>
+                  {availability.sourceUrl ? (
+                    <a href={availability.sourceUrl} target="_blank" rel="noreferrer">
+                      {activity.facilityName ?? activity.name}（{availability.label}）↗
+                    </a>
+                  ) : (
+                    `${activity.facilityName ?? activity.name}（${availability.label}）`
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {dataError ? (
           <div className="empty-state">
             <strong>データを読み込めませんでした。</strong>
@@ -524,6 +603,7 @@ export default function SportsMapApp() {
                 rank={index + 1}
                 selected={activeSelectedId === recommendation.activity.id}
                 supportSpots={supportSpots}
+                referenceDate={availabilityReferenceDate}
                 onSelect={() => setSelectedId(recommendation.activity.id)}
               />
             ))}
@@ -574,7 +654,7 @@ export default function SportsMapApp() {
               <a href="https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000027" target="_blank" rel="noreferrer">江東区 AED設置箇所一覧</a>
               <a href="https://catalog.data.metro.tokyo.lg.jp/dataset/t000019d0000000003" target="_blank" rel="noreferrer">東京都水道局 Tokyowater Drinking Station</a>
               <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" target="_blank" rel="noreferrer">CC BY 4.0</a>
-              <p>各データを加工して使用／取得・料金確認日: 2026年8月15日</p>
+              <p>各データを加工して使用／取得・料金確認日: 2026年8月15日／休館日確認日: 2026年8月21日</p>
             </div>
           </details>
         </div>
@@ -627,18 +707,22 @@ function RecommendationCard({
   rank,
   selected,
   supportSpots,
+  referenceDate,
   onSelect,
 }: {
   recommendation: ActivityRecommendation;
   rank: number;
   selected: boolean;
   supportSpots: SupportSpot[];
+  referenceDate: Date;
   onSelect: () => void;
 }) {
   const { activity, distanceKm, reasons, warnings } = recommendation;
   const nearestSupport = getNearestSupport(activity, supportSpots);
   const closedDayNote = getClosedDayNote(activity);
-  const todayAvailabilityBadge = getTodayAvailabilityBadge(activity);
+  const availabilityBadge = getAvailabilityBadge(
+    getActivityAvailability(activity, referenceDate),
+  );
 
   return (
     <article className={`result-card${selected ? " is-selected" : ""}`} id={`result-${activity.id}`}>
@@ -646,12 +730,10 @@ function RecommendationCard({
         <span className="rank-badge">{String(rank).padStart(2, "0")}</span>
         <span>{CATEGORY_LABELS[activity.category ?? ""] ?? "スポーツ"}</span>
         <span className="distance-pill">{formatDistance(distanceKm)}</span>
-        {todayAvailabilityBadge && (
-          <span className={`today-availability ${todayAvailabilityBadge.className}`}>
-            <b aria-hidden="true">{todayAvailabilityBadge.icon}</b>
-            {todayAvailabilityBadge.label}
-          </span>
-        )}
+        <span className={`today-availability ${availabilityBadge.className}`}>
+          <b aria-hidden="true">{availabilityBadge.icon}</b>
+          {availabilityBadge.label}
+        </span>
       </div>
       <h3>{activity.name}</h3>
       <p className="facility-name">{activity.facilityName}</p>
@@ -667,6 +749,17 @@ function RecommendationCard({
         <div className="closed-day-note">
           <strong>休館日のご案内</strong>
           <span>{closedDayNote}</span>
+          {(activity.closedDayVerifiedAt || activity.closedDaySourceUrl) && (
+            <small>
+              {activity.closedDayVerifiedAt &&
+                `確認 ${formatDate(activity.closedDayVerifiedAt)}`}
+              {activity.closedDaySourceUrl && (
+                <a href={activity.closedDaySourceUrl} target="_blank" rel="noreferrer">
+                  公式日程を見る ↗
+                </a>
+              )}
+            </small>
+          )}
         </div>
       )}
       {nearestSupport.length > 0 && (
@@ -747,44 +840,32 @@ function formatDate(value?: string | null) {
 }
 
 function getClosedDayNote(activity: Activity) {
-  if (typeof activity.closedDayNote === "string" && activity.closedDayNote.trim()) {
-    return activity.closedDayNote.trim();
-  }
-
-  const notes = [activity.priceNote, ...(activity.warnings ?? [])]
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0);
-  return (
-    notes.find((note) => /(休館日|休場日|休止|定休日|開放日)/.test(note)) ?? null
-  );
+  return typeof activity.closedDayNote === "string" && activity.closedDayNote.trim()
+    ? activity.closedDayNote.trim()
+    : null;
 }
 
-function getTodayAvailabilityBadge(activity: Activity) {
-  const status = activity.todayAvailability;
-  const customLabel = activity.todayAvailabilityLabel?.trim();
-
-  if (status === "open") {
-    return {
-      className: "is-open",
-      icon: "✓",
-      label: customLabel || "本日開館",
-    };
-  }
-  if (status === "closed") {
+function getAvailabilityBadge(availability: ActivityAvailability) {
+  if (availability.status === "regularly-closed") {
     return {
       className: "is-closed",
       icon: "×",
-      label: customLabel || "本日休館",
+      label: availability.label,
     };
   }
-  if (status === "check") {
+  if (availability.status === "activity-unavailable") {
     return {
-      className: "is-check",
-      icon: "!",
-      label: customLabel || "営業情報を確認",
+      className: "is-closed",
+      icon: "×",
+      label: availability.label,
     };
   }
 
-  return null;
+  return {
+    className: "is-check",
+    icon: "!",
+    label: availability.label,
+  };
 }
 
 function escapeHtml(value: string) {

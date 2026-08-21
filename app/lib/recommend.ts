@@ -8,7 +8,8 @@ import {
   type Mood,
   type RecommendationInput,
   type RecommendationScoreBreakdown,
-} from "./types";
+} from "./types.ts";
+import { shouldExcludeFromRecommendations } from "./availability.ts";
 
 /** Maximum points available for each independently inspectable factor. */
 export const RECOMMENDATION_SCORE_WEIGHTS = {
@@ -56,13 +57,16 @@ type ValidRecommendationInput = RecommendationInput & { location: GeoPoint };
 export function recommendActivities(
   activities: readonly Activity[],
   input: RecommendationInput,
+  referenceDate = new Date(),
 ): ActivityRecommendation[] {
   if (!isValidInput(input)) {
     return [];
   }
 
   return activities
-    .map((activity, index) => scoreActivity(activity, input, index))
+    .map((activity, index) =>
+      scoreActivity(activity, input, index, referenceDate),
+    )
     .filter((item): item is IndexedRecommendation => item !== null)
     .sort((left, right) => {
       const scoreDifference =
@@ -87,7 +91,12 @@ function scoreActivity(
   activity: Activity,
   input: ValidRecommendationInput,
   index: number,
+  referenceDate: Date,
 ): IndexedRecommendation | null {
+  if (shouldExcludeFromRecommendations(activity, referenceDate)) {
+    return null;
+  }
+
   if (!isGeoPoint(activity.location)) {
     return null;
   }
