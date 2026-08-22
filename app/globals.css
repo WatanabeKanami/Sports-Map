@@ -474,6 +474,7 @@ summary:focus-visible {
 .map-toolbar button.is-active.is-water > span { background: var(--aqua); }
 .map-toolbar button.is-active.is-cooling > span { background: var(--blue); color: var(--white); }
 .map-toolbar button.is-active.is-toilet > span { background: var(--lime); }
+.map-toolbar button.is-active.is-wheelchair > span { background: var(--lime); }
 .map-toolbar button.is-active.is-aed > span { background: var(--coral); }
 
 .map-toolbar button:not(.is-active) {
@@ -546,12 +547,27 @@ summary:focus-visible {
   font-family: var(--mono);
   font-size: 8px;
   font-weight: 900;
+  position: relative;
 }
 
 .support-marker.is-water { background: var(--aqua); }
 .support-marker.is-cooling { background: var(--blue); color: var(--white); }
 .support-marker.is-toilet { background: var(--lime); }
 .support-marker.is-aed { background: var(--coral); }
+.support-marker.has-wheelchair-badge::after {
+  content: "♿";
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--white);
+  font-size: 9px;
+}
 
 .map-popup {
   max-width: 220px;
