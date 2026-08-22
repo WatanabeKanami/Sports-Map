@@ -96,6 +96,7 @@ export default function SportsMapApp() {
     Record<SupportCategory, boolean>
   >({ water: true, cooling: true, toilet: false, aed: false });
 
+  const [showWheelchairIcon, setShowWheelchairIcon] = useState(true);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerLayerRef = useRef<LayerGroup | null>(null);
@@ -279,22 +280,37 @@ export default function SportsMapApp() {
     });
 
     supportSpots.forEach((spot) => {
-      if (!supportVisibility[spot.category]) return;
-      const meta = SUPPORT_META[spot.category];
-      const marker = L.marker([spot.location.latitude, spot.location.longitude], {
-        icon: L.divIcon({
-          className: "map-marker-shell",
-          html: `<span class="support-marker ${meta.className}">${meta.shortLabel}</span>`,
-          iconSize: [34, 34],
-          iconAnchor: [17, 17],
-        }),
-        title: spot.name,
-      }).addTo(markerLayer);
+  if (!supportVisibility[spot.category]) return;
+  const meta = SUPPORT_META[spot.category];
 
-      marker.bindPopup(
-        `<div class="map-popup"><strong>${escapeHtml(spot.name)}</strong><br><span>${escapeHtml(spot.details)}</span></div>`,
-      );
-    });
+  // トイレのうち、車椅子対応が確認できていて、かつボタンがオンのときだけ true
+  const showAccessibleBadge =
+    spot.category === "toilet" &&
+    spot.wheelchairAccessible === true &&
+    showWheelchairIcon;
+
+  const markerClassName = `support-marker ${meta.className}${
+    showAccessibleBadge ? " has-wheelchair-badge" : ""
+  }`;
+
+  const marker = L.marker([spot.location.latitude, spot.location.longitude], {
+    icon: L.divIcon({
+      className: "map-marker-shell",
+      html: `<span class="${markerClassName}">${meta.shortLabel}</span>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 17],
+    }),
+    title: showAccessibleBadge ? `${spot.name}(車椅子対応)` : spot.name,
+  }).addTo(markerLayer);
+
+  const accessibleNote = showAccessibleBadge
+    ? `<br><span>♿ 車椅子対応設備あり</span>`
+    : "";
+
+  marker.bindPopup(
+    `<div class="map-popup"><strong>${escapeHtml(spot.name)}</strong><br><span>${escapeHtml(spot.details)}</span>${accessibleNote}</div>`,
+  );
+});
 
     if (locationStatus === "success" && appliedInput.location) {
       L.circleMarker(
@@ -310,6 +326,7 @@ export default function SportsMapApp() {
         .bindTooltip("現在地")
         .addTo(markerLayer);
     }
+
   }, [activities, supportSpots, recommendations, excludedActivities, supportVisibility, locationStatus, appliedInput.location, mapReady]);
 
   useEffect(() => {
@@ -547,6 +564,15 @@ export default function SportsMapApp() {
                   </button>
                 );
               })}
+              <button
+  className={showWheelchairIcon ? "is-active is-wheelchair" : ""}
+  type="button"
+  aria-pressed={showWheelchairIcon}
+  onClick={() => setShowWheelchairIcon((current) => !current)}
+>
+  <span aria-hidden="true">♿</span>
+  車椅子対応表示
+</button>
             </div>
             <div ref={mapContainerRef} className="leaflet-map" aria-label="江東区の運動施設と支援スポットの地図" />
             {!mapReady && <div className="map-loading">地図を読み込み中…</div>}
