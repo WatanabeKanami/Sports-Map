@@ -28,11 +28,17 @@ export interface GeoPoint {
   longitude: number;
 }
 
+export interface OperatingHours {
+  opensAt: string;
+  closesAt: string;
+}
+
 /** A recommendable activity. Nullable fields represent unverified source data. */
 export interface Activity {
   id: string;
   name: string;
   location?: GeoPoint | null;
+  operatingHours?: OperatingHours | null;
   durationMinutes?: number | null;
   costYen?: number | null;
   minGroupSize?: number | null;
@@ -112,7 +118,13 @@ export interface RecommendationScoreBreakdown {
 export interface ActivityRecommendation {
   activity: Activity;
   score: number;
-  distanceKm: number;
+  distanceKm: number | null;
+  travel?: {
+    walkingMinutes: number;
+    arrivalAt: string;
+    availableUntil: string;
+    requestedMinutes: number;
+  };
   scoreBreakdown: RecommendationScoreBreakdown;
   reasons: string[];
   reason: string;

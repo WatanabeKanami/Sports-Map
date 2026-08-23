@@ -25,6 +25,7 @@ export const RECOMMENDATION_SCORE_WEIGHTS = {
 
 const DISTANCE_SCORE_LIMIT_KM = 10;
 const RESULT_LIMIT = 3;
+const WALKING_METERS_PER_MINUTE = 80;
 
 const moodLabels: Record<Mood, string> = {
   relax: "ゆるく動きたい",
@@ -49,7 +50,7 @@ interface IndexedRecommendation {
   recommendation: ActivityRecommendation;
 }
 
-type ValidRecommendationInput = RecommendationInput & { location: GeoPoint };
+type ValidRecommendationInput = RecommendationInput;
 
 /**
  * Scores activities without mutating input and returns at most three matches.
@@ -61,6 +62,7 @@ export function recommendActivities(
   input: RecommendationInput,
   referenceDate = new Date(),
   wbgtLevel: WBGTLevel | null = null,
+  options: { useTravelTime?: boolean } = {},
 ): ActivityRecommendation[] {
   if (!isValidInput(input)) {
     return [];
@@ -68,7 +70,7 @@ export function recommendActivities(
 
   return activities
     .map((activity, index) =>
-      scoreActivity(activity, input, index, referenceDate, wbgtLevel),
+      scoreActivity(activity, input, index, referenceDate, wbgtLevel, options),
     )
     .filter((item): item is IndexedRecommendation => item !== null)
     .sort((left, right) => {
@@ -80,7 +82,8 @@ export function recommendActivities(
       }
 
       const distanceDifference =
-        left.recommendation.distanceKm - right.recommendation.distanceKm;
+        (left.recommendation.distanceKm ?? Number.POSITIVE_INFINITY) -
+        (right.recommendation.distanceKm ?? Number.POSITIVE_INFINITY);
 
       return distanceDifference !== 0
         ? distanceDifference
@@ -96,6 +99,7 @@ function scoreActivity(
   index: number,
   referenceDate: Date,
   wbgtLevel: WBGTLevel | null,
+  options: { useTravelTime?: boolean },
 ): IndexedRecommendation | null {
   if (shouldExcludeFromRecommendations(activity, referenceDate)) {
     return null;
@@ -107,12 +111,20 @@ function scoreActivity(
 
   const warnings: string[] = [];
   const reasons: ReasonCandidate[] = [];
-  const distanceKm = haversineDistanceKm(input.location, activity.location);
+  const distanceKm = input.location
+    ? haversineDistanceKm(input.location, activity.location)
+    : null;
+  const travel = options.useTravelTime && input.location
+    ? getTravelDetails(distanceKm, referenceDate, input.timeMinutes, activity.operatingHours)
+    : undefined;
+  if (options.useTravelTime && input.location && !travel) {
+    return null;
+  }
   const distance =
     RECOMMENDATION_SCORE_WEIGHTS.distance *
-    Math.max(0, 1 - distanceKm / DISTANCE_SCORE_LIMIT_KM);
+    Math.max(0, 1 - (distanceKm ?? 0) / DISTANCE_SCORE_LIMIT_KM);
 
-  if (distance > 0) {
+  if (distance > 0 && distanceKm !== null) {
     reasons.push({
       points: distance,
       order: 0,
@@ -268,7 +280,8 @@ function scoreActivity(
     recommendation: {
       activity,
       score,
-      distanceKm: round(distanceKm),
+      distanceKm: distanceKm === null ? null : round(distanceKm),
+      travel,
       scoreBreakdown,
       reasons: reasonTexts,
       reason: reasonTexts.join("・"),
@@ -286,7 +299,7 @@ function isValidInput(
     validPositiveInteger(input.groupSize) !== null &&
     MOODS.includes(input.mood) &&
     INDOOR_PREFERENCES.includes(input.indoorPreference) &&
-    isGeoPoint(input.location)
+    (input.location === null || isGeoPoint(input.location))
   );
 }
 
@@ -346,6 +359,48 @@ function haversineDistanceKm(from: GeoPoint, to: GeoPoint): number {
       Math.sin(longitudeDifference / 2) ** 2;
 
   return 2 * earthRadiusKm * Math.asin(Math.sqrt(haversine));
+}
+
+function getTravelDetails(
+  distanceKm: number,
+  referenceDate: Date,
+  requestedMinutes: number,
+  operatingHours: Activity["operatingHours"],
+) {
+  const walkingMinutes = Math.ceil((distanceKm * 1_000) / WALKING_METERS_PER_MINUTE);
+  const arrivalAt = new Date(referenceDate.getTime() + walkingMinutes * 60_000);
+  const opensAt = getLocalTokyoTime(referenceDate, operatingHours?.opensAt);
+  const availableUntil = getClosingDate(referenceDate, operatingHours?.closesAt);
+  if (
+    !opensAt ||
+    !availableUntil ||
+    arrivalAt < opensAt ||
+    arrivalAt.getTime() + requestedMinutes * 60_000 > availableUntil.getTime()
+  ) {
+    return null;
+  }
+
+  return {
+    walkingMinutes,
+    arrivalAt: arrivalAt.toISOString(),
+    availableUntil: availableUntil.toISOString(),
+    requestedMinutes,
+  };
+}
+
+function getClosingDate(referenceDate: Date, closesAt?: string) {
+  return getLocalTokyoTime(referenceDate, closesAt);
+}
+
+function getLocalTokyoTime(referenceDate: Date, value?: string) {
+  if (!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+  const [hours, minutes] = value.split(":").map(Number);
+  if (hours > 23 || minutes > 59) return null;
+  const tokyoDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(referenceDate);
+  const [year, month, day] = tokyoDate.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hours - 9, minutes));
 }
 
 function toRadians(degrees: number): number {
