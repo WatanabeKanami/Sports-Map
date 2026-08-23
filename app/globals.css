@@ -166,6 +166,37 @@ summary:focus-visible {
   line-height: 1.8;
 }
 
+.today-recommendation {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 28px;
+  padding: 18px;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  box-shadow: 6px 6px 0 var(--lime);
+}
+
+.today-recommendation-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.today-recommendation-heading strong { font-size: 16px; }
+.today-recommendation-status { margin: 0; font-size: 13px; font-weight: 700; }
+.today-recommendation-status.is-error { color: #a72a18; line-height: 1.6; }
+.wbgt-reading { display: flex; align-items: center; gap: 12px; }
+.wbgt-reading strong { font-size: 28px; line-height: 1; }
+.wbgt-reading span { padding: 6px 9px; border: 1px solid var(--ink); font-size: 12px; font-weight: 900; }
+.wbgt-reading.is-severe span { background: var(--coral); }
+.wbgt-reading.is-danger span { background: #e43d2e; color: var(--white); }
+.wbgt-reading.is-warning span { background: var(--lime); }
+.today-recommendation-advice { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.6; }
+.today-recommendation > small { color: var(--ink-soft); font-family: var(--mono); font-size: 10px; }
+.heat-support-counts { padding-top: 10px; border-top: 1px solid var(--line); font-size: 11px; font-weight: 800; }
+.wbgt-attribution { margin: 0; color: var(--ink-soft); font-size: 10px; line-height: 1.5; }
+
 .location-line {
   display: flex;
   align-items: center;
