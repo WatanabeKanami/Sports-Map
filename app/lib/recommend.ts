@@ -10,6 +10,7 @@ import {
   type RecommendationScoreBreakdown,
 } from "./types.ts";
 import { shouldExcludeFromRecommendations } from "./availability.ts";
+import type { WBGTLevel } from "./wbgt.ts";
 
 /** Maximum points available for each independently inspectable factor. */
 export const RECOMMENDATION_SCORE_WEIGHTS = {
@@ -19,6 +20,7 @@ export const RECOMMENDATION_SCORE_WEIGHTS = {
   groupSize: 10,
   mood: 15,
   indoorPreference: 10,
+  heatAdjustment: 0,
 } as const satisfies RecommendationScoreBreakdown;
 
 const DISTANCE_SCORE_LIMIT_KM = 10;
@@ -58,6 +60,7 @@ export function recommendActivities(
   activities: readonly Activity[],
   input: RecommendationInput,
   referenceDate = new Date(),
+  wbgtLevel: WBGTLevel | null = null,
 ): ActivityRecommendation[] {
   if (!isValidInput(input)) {
     return [];
@@ -65,7 +68,7 @@ export function recommendActivities(
 
   return activities
     .map((activity, index) =>
-      scoreActivity(activity, input, index, referenceDate),
+      scoreActivity(activity, input, index, referenceDate, wbgtLevel),
     )
     .filter((item): item is IndexedRecommendation => item !== null)
     .sort((left, right) => {
@@ -92,6 +95,7 @@ function scoreActivity(
   input: ValidRecommendationInput,
   index: number,
   referenceDate: Date,
+  wbgtLevel: WBGTLevel | null,
 ): IndexedRecommendation | null {
   if (shouldExcludeFromRecommendations(activity, referenceDate)) {
     return null;
@@ -215,6 +219,7 @@ function scoreActivity(
 
   const setting = validActivitySetting(activity.setting);
   let indoorPreference = 0;
+  let heatAdjustment = 0;
 
   if (setting === null) {
     warnings.push("屋内・屋外の区分は未確認です。");
@@ -231,6 +236,12 @@ function scoreActivity(
     return null;
   }
 
+  if (wbgtLevel === "danger" && setting === "outdoor") return null;
+  if (wbgtLevel === "warning" || wbgtLevel === "severe") {
+    heatAdjustment = setting === "indoor" || setting === "both" ? 15 : -20;
+    reasons.push({ points: Math.abs(heatAdjustment), order: 6, text: heatAdjustment > 0 ? "暑さを考慮して屋内を優先" : "暑さを考慮して屋外の順位を調整" });
+  }
+
   const scoreBreakdown = roundBreakdown({
     distance,
     time,
@@ -238,6 +249,7 @@ function scoreActivity(
     groupSize,
     mood,
     indoorPreference,
+    heatAdjustment,
   });
   const score = round(
     Object.values(scoreBreakdown).reduce((total, points) => total + points, 0),

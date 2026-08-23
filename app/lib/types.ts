@@ -105,6 +105,7 @@ export interface RecommendationScoreBreakdown {
   groupSize: number;
   mood: number;
   indoorPreference: number;
+  heatAdjustment: number;
 }
 
 /** A ranked activity with an explainable score and data-quality warnings. */

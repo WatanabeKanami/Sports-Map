@@ -8,6 +8,12 @@ import {
   type ActivityAvailability,
 } from "./lib/availability";
 import { recommendActivities } from "./lib/recommend";
+import {
+  fetchTokyoWBGT,
+  getWBGTAdvice,
+  getWBGTLevelLabel,
+  type TokyoWBGT,
+} from "./lib/wbgt";
 import type {
   Activity,
   ActivityRecommendation,
@@ -88,6 +94,9 @@ export default function SportsMapApp() {
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dataError, setDataError] = useState(false);
+  const [wbgt, setWbgt] = useState<TokyoWBGT | null>(null);
+  const [wbgtLoading, setWbgtLoading] = useState(true);
+  const [wbgtError, setWbgtError] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [availabilityReferenceDate, setAvailabilityReferenceDate] = useState(
     () => new Date(),
@@ -130,6 +139,18 @@ export default function SportsMapApp() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+    fetchTokyoWBGT(controller.signal)
+      .then(setWbgt)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setWbgtError(true);
+      })
+      .finally(() => setWbgtLoading(false));
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
     const timeoutId = window.setTimeout(
       () => setAvailabilityReferenceDate(new Date()),
       millisecondsUntilNextTokyoDay(availabilityReferenceDate),
@@ -140,8 +161,8 @@ export default function SportsMapApp() {
 
   const recommendations = useMemo(
     () =>
-      recommendActivities(activities, appliedInput, availabilityReferenceDate),
-    [activities, appliedInput, availabilityReferenceDate],
+      recommendActivities(activities, appliedInput, availabilityReferenceDate, wbgt?.level ?? null),
+    [activities, appliedInput, availabilityReferenceDate, wbgt?.level],
   );
 
   const excludedActivities = useMemo(
@@ -327,7 +348,7 @@ export default function SportsMapApp() {
         .addTo(markerLayer);
     }
 
-  }, [activities, supportSpots, recommendations, excludedActivities, supportVisibility, locationStatus, appliedInput.location, mapReady]);
+  }, [activities, supportSpots, recommendations, excludedActivities, supportVisibility, showWheelchairIcon, locationStatus, appliedInput.location, mapReady]);
 
   useEffect(() => {
     const selected = recommendations.find(({ activity }) => activity.id === activeSelectedId);
@@ -415,6 +436,13 @@ export default function SportsMapApp() {
             使える時間と予算を選ぶだけ。江東区のオープンデータから、<br />
             いまの条件に合う運動を3つ提案します。
           </p>
+
+          <TodayRecommendation
+            wbgt={wbgt}
+            loading={wbgtLoading}
+            error={wbgtError}
+            supportSpots={supportSpots}
+          />
 
           <div className="location-line">
             <div>
@@ -815,6 +843,70 @@ function RecommendationCard({
       </div>
     </article>
   );
+}
+
+function TodayRecommendation({
+  wbgt,
+  loading,
+  error,
+  supportSpots,
+}: {
+  wbgt: TokyoWBGT | null;
+  loading: boolean;
+  error: boolean;
+  supportSpots: SupportSpot[];
+}) {
+  const supportCounts = supportSpots.reduce(
+    (counts, spot) => {
+      if (spot.category === "water" || spot.category === "cooling") counts[spot.category] += 1;
+      return counts;
+    },
+    { water: 0, cooling: 0 },
+  );
+
+  return (
+    <aside className="today-recommendation" aria-live="polite">
+      <div className="today-recommendation-heading">
+        <strong>現在の暑さ指数(WBGT)</strong>
+      </div>
+      {loading ? (
+        <p className="today-recommendation-status">暑さ指数を確認中…</p>
+      ) : error || !wbgt ? (
+        <p className="today-recommendation-status is-error">
+          現在、暑さ指数を取得できません。通常の条件からおすすめを表示しています。
+        </p>
+      ) : (
+        <>
+          <div className={`wbgt-reading is-${wbgt.level}`}>
+            <strong>WBGT {wbgt.value.toFixed(1)}</strong>
+            <span>{getWBGTLevelLabel(wbgt.level)}</span>
+          </div>
+          <p className="today-recommendation-advice">{getWBGTAdvice(wbgt.level)}</p>
+          <small>東京都のデータ／{formatWBGTDate(wbgt.observedAt)}時点</small>
+          {(wbgt.level === "warning" || wbgt.level === "severe" || wbgt.level === "danger") && (
+            <div className="heat-support-counts">
+              周辺の暑さ対策：給水 {supportCounts.water}件／涼み処 {supportCounts.cooling}件
+            </div>
+          )}
+        </>
+      )}
+      <p className="wbgt-attribution">出典：環境省熱中症予防情報サイト。提供データをもとに、本サービス独自の基準で運動施設をおすすめしています。</p>
+    </aside>
+  );
+}
+
+function formatWBGTDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
 }
 
 function getNearestSupport(activity: Activity, spots: SupportSpot[]) {
