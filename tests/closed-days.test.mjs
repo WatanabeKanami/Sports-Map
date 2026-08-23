@@ -151,3 +151,45 @@ test("handles the Tokyo date boundary and calendar expiry safely", () => {
     "schedule-check",
   );
 });
+
+test("filters current-location recommendations by arrival and requested exercise time", () => {
+  const baseActivity = activity("koto-sports-hall-training");
+  const input = {
+    timeMinutes: 60,
+    budget: 500,
+    groupSize: 2,
+    mood: "refresh",
+    indoorPreference: "either",
+    location: { latitude: 35.677588, longitude: 139.821396 },
+  };
+  const atThreePm = new Date("2026-08-21T06:00:00.000Z");
+  const available = { ...baseActivity, operatingHours: { opensAt: "09:00", closesAt: "18:00" } };
+  const tooLate = { ...baseActivity, operatingHours: { opensAt: "09:00", closesAt: "16:00" } };
+
+  assert.equal(
+    recommendActivities([available], input, atThreePm, null, { useTravelTime: true }).length,
+    1,
+  );
+  assert.equal(
+    recommendActivities([tooLate], input, atThreePm, null, { useTravelTime: true }).length,
+    0,
+  );
+  assert.equal(
+    recommendActivities(
+      [{ ...tooLate, durationMinutes: 30 }],
+      { ...input, timeMinutes: 30 },
+      atThreePm,
+      null,
+      { useTravelTime: true },
+    ).length,
+    1,
+  );
+  assert.equal(
+    recommendActivities([baseActivity], input, new Date("2026-08-24T06:00:00.000Z"), null, { useTravelTime: true }).length,
+    0,
+  );
+  assert.equal(
+    recommendActivities([baseActivity], { ...input, location: null }, atThreePm).length,
+    1,
+  );
+});

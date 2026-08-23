@@ -161,8 +161,10 @@ export default function SportsMapApp() {
 
   const recommendations = useMemo(
     () =>
-      recommendActivities(activities, appliedInput, availabilityReferenceDate, wbgt?.level ?? null),
-    [activities, appliedInput, availabilityReferenceDate, wbgt?.level],
+      recommendActivities(activities, appliedInput, availabilityReferenceDate, wbgt?.level ?? null, {
+        useTravelTime: locationStatus === "success",
+      }),
+    [activities, appliedInput, availabilityReferenceDate, wbgt?.level, locationStatus],
   );
 
   const excludedActivities = useMemo(
@@ -361,6 +363,7 @@ export default function SportsMapApp() {
   }, [activeSelectedId, recommendations, mapReady]);
 
   const applySearch = () => {
+    setAvailabilityReferenceDate(new Date());
     setAppliedInput({ ...draftInput });
     window.setTimeout(() => {
       document.getElementById("recommendations")?.scrollIntoView({
@@ -389,6 +392,7 @@ export default function SportsMapApp() {
         setLocationLabel("現在地");
         setSelectedArea("current");
         setLocationStatus("success");
+        setAvailabilityReferenceDate(new Date());
         mapRef.current?.flyTo([location.latitude, location.longitude], 14, {
           duration: 0.6,
         });
@@ -622,6 +626,11 @@ export default function SportsMapApp() {
             {appliedInput.budget === 0 ? "無料" : `${appliedInput.budget.toLocaleString("ja-JP")}円以内`}
           </p>
         </div>
+        {locationStatus === "success" && recommendations.length > 0 && (
+          <p className="availability-summary">
+            今から{appliedInput.timeMinutes}分利用できる施設は{recommendations.length}件です。
+          </p>
+        )}
 
         {excludedActivities.length > 0 && (
           <div className="availability-alert">
@@ -652,7 +661,7 @@ export default function SportsMapApp() {
         ) : recommendations.length === 0 ? (
           <div className="empty-state">
             <strong>ぴったりの候補が見つかりませんでした。</strong>
-            <span>時間・予算・人数・屋内外のどれかを少し広げると見つかりやすいよ。</span>
+            <span>{locationStatus === "success" ? `現在地から移動して${appliedInput.timeMinutes}分運動できる施設が見つかりませんでした。` : "時間・予算・人数・屋内外のどれかを少し広げると見つかりやすいよ。"}</span>
           </div>
         ) : (
           <div className="result-grid">
@@ -777,7 +786,7 @@ function RecommendationCard({
   referenceDate: Date;
   onSelect: () => void;
 }) {
-  const { activity, distanceKm, reasons, warnings } = recommendation;
+  const { activity, distanceKm, reasons, warnings, travel } = recommendation;
   const nearestSupport = getNearestSupport(activity, supportSpots);
   const closedDayNote = getClosedDayNote(activity);
   const availabilityBadge = getAvailabilityBadge(
@@ -789,7 +798,7 @@ function RecommendationCard({
       <div className="result-topline">
         <span className="rank-badge">{String(rank).padStart(2, "0")}</span>
         <span>{CATEGORY_LABELS[activity.category ?? ""] ?? "スポーツ"}</span>
-        <span className="distance-pill">{formatDistance(distanceKm)}</span>
+        <span className="distance-pill">{distanceKm === null ? "距離未計算" : formatDistance(distanceKm)}</span>
         <span className={`today-availability ${availabilityBadge.className}`}>
           <b aria-hidden="true">{availabilityBadge.icon}</b>
           {availabilityBadge.label}
@@ -802,6 +811,13 @@ function RecommendationCard({
         <span><small>料金</small>{formatCost(activity)}</span>
         <span><small>場所</small>{formatSetting(activity)}</span>
       </div>
+      {travel && (
+        <div className="travel-note">
+          <span>徒歩約{travel.walkingMinutes}分（目安）</span>
+          <span>{formatTime(travel.arrivalAt)}頃到着予定</span>
+          <span>{travel.requestedMinutes}分利用可能</span>
+        </div>
+      )}
       <div className="reason-list">
         {reasons.map((reason) => <span key={reason}>✓ {reason}</span>)}
       </div>
@@ -939,6 +955,17 @@ function formatDistance(distanceKm: number) {
   return distanceKm < 1
     ? `${Math.max(10, Math.round((distanceKm * 1_000) / 10) * 10)}m`
     : `${distanceKm.toFixed(1)}km`;
+}
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "--:--"
+    : new Intl.DateTimeFormat("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
 }
 
 function formatCost(activity: Activity) {
