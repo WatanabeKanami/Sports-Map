@@ -13,6 +13,41 @@
 - 公開サイトは最後に公開した版です。GitHubの最新コードをまだ再公開していない場合、表示内容に差が出ることがあります。
 - このサービスは東京都・江東区の公式サービスではありません。
 
+## 使用データ・ライセンス
+
+本アプリでは、以下のオープンデータを利用しています。
+
+### 使用データ
+
+* **江東区 スポーツ施設一覧**
+  東京都オープンデータカタログ
+  https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d3100000004
+
+* **江東区 クーリングシェルター（指定暑熱避難施設）一覧**
+  東京都オープンデータカタログ
+  https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d3100000016
+
+* **江東区 公衆トイレ一覧**
+  東京都オープンデータカタログ
+  https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000019
+
+* **江東区 AED設置箇所一覧**
+  東京都オープンデータカタログ
+  https://catalog.data.metro.tokyo.lg.jp/dataset/t131083d0000000027
+
+* **東京都水道局 Tokyowater Drinking Station 一覧**
+  東京都オープンデータカタログ
+  https://catalog.data.metro.tokyo.lg.jp/dataset/t000019d0000000003
+
+### ライセンス
+
+上記のデータは、**クリエイティブ・コモンズ 表示 4.0 国際（CC BY 4.0）**に基づいて利用しています。
+
+ライセンスの詳細：
+https://creativecommons.org/licenses/by/4.0/deed.ja
+
+本アプリでは、上記データを加工・利用しています。
+
 ---
 
 ## 最初に、この3つだけ分かれば大丈夫
